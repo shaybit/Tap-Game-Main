@@ -4,7 +4,7 @@ on:
   push:
     paths:
         - client/*
-    branches: [ main ]
+    branches: [ master ]
 jobs:
   build-push-gcr:
     name: Build and Push to GCP
