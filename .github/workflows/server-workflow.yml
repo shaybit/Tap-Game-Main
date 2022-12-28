@@ -2,7 +2,9 @@ name: Build and Deploy to Cloud Run
 
 on:
   push:
-    branches: [ "master" ]
+    paths:
+        - server/*
+    branches: [ master ]
 
 env:
   PROJECT_ID: tap-game-372914 # TODO: update Google Cloud project id
