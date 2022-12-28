@@ -12,6 +12,7 @@ jobs:
     env:
       IMAGE_NAME: tap-game-backend
       PROJECT_ID: tap-game-372914
+      MONGO_URI: ${{ secrets.MONGO_URI }}
     steps:
 
     - name: Checkout
