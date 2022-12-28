@@ -96,6 +96,7 @@ jobs:
         run: |-
           docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" ./
           docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+        working-directory: server
 
       # END - Docker auth and build
 
