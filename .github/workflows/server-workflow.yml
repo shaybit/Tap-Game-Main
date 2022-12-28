@@ -12,7 +12,6 @@ jobs:
     env:
       IMAGE_NAME: tap-game-backend
       PROJECT_ID: tap-game-372914
-      MONGO_URI: '${{ secrets.MONGO_URI }}'
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -24,7 +23,7 @@ jobs:
         credentials_json: '${{ secrets.SERVICE_ACCOUNT_KEY }}'
 
     - name: Build Docker Image
-      run: docker build -t $IMAGE_NAME:latest . 
+      run: docker build --build-arg MONGO_URI=${{ secrets.MONGO_URI }} -t $IMAGE_NAME:latest . 
       working-directory: server
 
     - name: Configure Docker Client
