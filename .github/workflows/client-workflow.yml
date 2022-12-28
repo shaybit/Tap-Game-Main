@@ -10,7 +10,7 @@ jobs:
     name: Build and Push to GCP
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: tap-game-client
+      IMAGE_NAME: tap-game-frontend
       PROJECT_ID: tap-game-372914
     steps:
     - name: Checkout
