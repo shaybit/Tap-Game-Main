@@ -13,6 +13,7 @@ jobs:
     env:
       IMAGE_NAME: tap-game-backend
       PROJECT_ID: tap-game-372914
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -38,15 +39,15 @@ jobs:
         GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
       run: |-
         docker tag $IMAGE_NAME:latest gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
-        docker tag $IMAGE_NAME:latest gcr.io/$PROJECT_ID/$IMAGE_NAME:1.0
         docker push gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
-        docker push gcr.io/$PROJECT_ID/$IMAGE_NAME:1.0
       working-directory: server
+    
     - id: 'deploy'
       uses: 'google-github-actions/deploy-cloudrun@v1'
       with:
         service: 'tap-game-backend'
-        image: 'gcr.io/cloudrun/hello'
+        image: gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
+    
     - name: 'Use output'
       run: 'curl "${{ steps.deploy.outputs.url }}"'
     
