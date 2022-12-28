@@ -1,51 +1,50 @@
-name: Build and Push Python Image to Google Cloud Platform
+name: Build and Deploy to Cloud Run
+
 on:
   push:
-    paths:
-        - server/*
-    branches: [ master ]
+    branches: [ "master" ]
+
+env:
+  PROJECT_ID: tap-game-372914 # TODO: update Google Cloud project id
+  SERVICE: tap-game-backend	 # TODO: update Cloud Run service name
+  REGION: us-central1 # TODO: update Cloud Run service region
+
 jobs:
-  build-push-gcr:
-    name: Build and Push to GCP
+  deploy:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: tap-game-backend
-      PROJECT_ID: tap-game-372914
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v1'
-      with:
-        credentials_json: '${{ secrets.SERVICE_ACCOUNT_KEY }}'
-    
-    - name: Configure Docker Client
-      run: |-
-        gcloud auth configure-docker --quiet
-        gcloud auth configure-docker us-west2-docker.pkg.dev --quiet
+      - name: Checkout
+        uses: actions/checkout@v2
 
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.SERVICE_ACCOUNT_KEY }}'
 
-    - name: Build Docker Image
-      run: docker build  -t $IMAGE_NAME:latest .
-      working-directory: server
- 
-    
-    - name: Push Docker Image to Container Registry (GCR)
-      run: |-
-        docker tag $IMAGE_NAME:latest gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
-        docker push gcr.io/$PROJECT_ID/$IMAGE_NAME:latest
+      - name: Configure Docker Client
+        run: |-
+          gcloud auth configure-docker --quiet
+          gcloud auth configure-docker gcr.io --quiet
 
-      working-directory: server
-    
-    - name: Deploy to Cloud Run
-      id: 'deploy'
-      uses: 'google-github-actions/deploy-cloudrun@v1'
-      with:
-        service: 'tap-game-backend'
-        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:latest
+      - name: Build and Push Container
+        run: |-
+          docker build -t "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" ./
+          docker push "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
 
-    - name: 'Use output'
-      run: 'curl "${{ steps.deploy.outputs.url }}"'
-    
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          # NOTE: If using a pre-built image, update the image name here
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
+
+      # If required, use the Cloud Run url output in later steps
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
